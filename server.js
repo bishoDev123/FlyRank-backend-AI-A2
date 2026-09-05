@@ -2,16 +2,18 @@ const express = require("express");
 const app = express();
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
+const db = require('./db');
+
 
 const options = {
-  definition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'Task API',
-      version: '1.0.0',
+    definition: {
+        openapi: '3.0.0',
+        info: {
+            title: 'Task API',
+            version: '1.0.0',
+        },
     },
-  },
-  apis: ['server.js'], // adjust if this file has a different name
+    apis: ['server.js'],
 };
 
 const openapiSpecification = swaggerJsdoc(options);
