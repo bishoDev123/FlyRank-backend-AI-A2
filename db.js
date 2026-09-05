@@ -20,8 +20,25 @@ if (seedCount === 0) {
     insert.run("take a shower", 1);
 }
 
-function getAllTasks() {
-    return db.prepare("SELECT * FROM tasks").all();
+function getAllTasks({ search, status } = {}) {
+    let query = "SELECT * FROM tasks";
+    const conditions = [];
+    const params = [];
+
+    if (search) {
+        conditions.push("title LIKE ?");
+        params.push(`%${search}%`);
+    }
+    if (status !== undefined) {
+        conditions.push("done = ?");
+        params.push(status === "done" ? 1 : 0);
+    }
+
+    if (conditions.length > 0) {
+        query += " WHERE " + conditions.join(" AND ");
+    }
+
+    return db.prepare(query).all(...params);
 }
 
 function getTaskById(id) {

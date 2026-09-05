@@ -39,7 +39,8 @@ app.get("/health", (req, res) => {
  *         description: List of all tasks
  */
 app.get("/tasks", (req, res) => {
-    res.json(db.getAllTasks());
+    const { search, status } = req.query;
+    res.json(db.getAllTasks({ search, status }));
 });
 
 /**
@@ -172,7 +173,7 @@ app.put("/tasks/:id", (req, res) => {
  *         description: Task not found
  */
 app.delete("/tasks/:id", (req, res) => {
-    const { params: {id} } = req
+    const { params: { id } } = req
     const task = db.getTaskById(id);
 
     if (!task) {
