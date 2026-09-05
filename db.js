@@ -20,4 +20,22 @@ if (seedCount === 0) {
     insert.run("take a shower", 1);
 }
 
-module.exports = db;
+function getAllTasks() {
+    return db.prepare("SELECT * FROM tasks").all();
+}
+
+function getTaskById(id) {
+    return db.prepare("SELECT * FROM tasks WHERE id = ?").get(id);
+}
+
+function createTask(task) {
+    const result = db.prepare("INSERT INTO tasks (task) VALUES (?)").run(task);
+    return getTaskById(result.lastInsertRowid);
+}
+
+module.exports = {
+    db,
+    getAllTasks,
+    getTaskById,
+    createTask
+};

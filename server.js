@@ -36,9 +36,9 @@ let tasks = [
     }
 ];
 
-function getTaskById(id) {
-    return tasks.find(obj => obj.id == id);
-}
+// function getTaskById(id) {
+//     return tasks.find(obj => obj.id == id);
+// }
 
 app.use(express.json());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openapiSpecification));
@@ -61,8 +61,7 @@ app.get("/health", (req, res) => {
  *         description: List of all tasks
  */
 app.get("/tasks", (req, res) => {
-    const dbTasks = db.prepare("SELECT * FROM tasks").all();
-    res.json(dbTasks);
+    res.json(db.getAllTasks());
 });
 
 /**
@@ -84,8 +83,7 @@ app.get("/tasks", (req, res) => {
  *         description: Task not found
  */
 app.get("/tasks/:id", (req, res) => {
-    // const task = getTaskById(req.params.id);
-    const task = db.prepare("SELECT * FROM tasks WHERE id = ?").get(req.params.id);
+    const task = db.getTaskById(req.params.id)
 
     if (!task) {
         return res.status(404).json([{ error: "task not found" }])
@@ -106,10 +104,10 @@ app.get("/tasks/:id", (req, res) => {
  *           schema:
  *             type: object
  *             properties:
- *               title:
+ *               task:
  *                 type: string
  *             example:
- *               title: Buy milk
+ *               task: Buy milk
  *     responses:
  *       201:
  *         description: The created task
@@ -118,16 +116,12 @@ app.get("/tasks/:id", (req, res) => {
  */
 app.post("/tasks", (req, res) => {
 
-    if (!req.body.title) {
+    if (!req.body.task) {
         return res.status(400).json({ error: "Title is required" });
     }
 
-    const newTask = {
-        id: tasks.length + 1,
-        title: req.body.title,
-        done: false
-    };
-    tasks.push(newTask);
+    const newTask = db.createTask(req.body.task);
+
     res.status(201).json(newTask);
 });
 
@@ -158,7 +152,7 @@ app.post("/tasks", (req, res) => {
  *       200:
  *         description: The updated task
  *       400:
- *         description: Invalid title
+ *         description: Invalid task
  *       404:
  *         description: Task not found
  */
@@ -168,11 +162,11 @@ app.put("/tasks/:id", (req, res) => {
     if (!task) {
         return res.status(404).json({ error: "Task not found" });
     }
-    if (req.body.title == "") {
-        return res.status(400).json({ error: "Title is required" });
+    if (req.body.task == "") {
+        return res.status(400).json({ error: "task is required" });
     }
 
-    task.title = req.body.title ?? task.title;
+    task.task = req.body.task ?? task.task;
     task.done = req.body.done ?? task.done;
     res.json(task);
 });
