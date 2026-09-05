@@ -61,7 +61,8 @@ app.get("/health", (req, res) => {
  *         description: List of all tasks
  */
 app.get("/tasks", (req, res) => {
-    res.json(tasks);
+    const dbTasks = db.prepare("SELECT * FROM tasks").all();
+    res.json(dbTasks);
 });
 
 /**
@@ -83,7 +84,8 @@ app.get("/tasks", (req, res) => {
  *         description: Task not found
  */
 app.get("/tasks/:id", (req, res) => {
-    const task = getTaskById(req.params.id);
+    // const task = getTaskById(req.params.id);
+    const task = db.prepare("SELECT * FROM tasks WHERE id = ?").get(req.params.id);
 
     if (!task) {
         return res.status(404).json([{ error: "task not found" }])
