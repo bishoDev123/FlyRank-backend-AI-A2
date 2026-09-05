@@ -18,28 +18,6 @@ const options = {
 
 const openapiSpecification = swaggerJsdoc(options);
 
-let tasks = [
-    {
-        "id": 1,
-        "title": "walk the dog",
-        "done": false
-    },
-    {
-        "id": 2,
-        "title": "Take out the trash",
-        "done": true
-    },
-    {
-        "id": 3,
-        "title": "Take a shower",
-        "done": true
-    }
-];
-
-// function getTaskById(id) {
-//     return tasks.find(obj => obj.id == id);
-// }
-
 app.use(express.json());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openapiSpecification));
 
@@ -104,10 +82,10 @@ app.get("/tasks/:id", (req, res) => {
  *           schema:
  *             type: object
  *             properties:
- *               task:
+ *               title:
  *                 type: string
  *             example:
- *               task: Buy milk
+ *               title: Buy milk
  *     responses:
  *       201:
  *         description: The created task
@@ -116,11 +94,11 @@ app.get("/tasks/:id", (req, res) => {
  */
 app.post("/tasks", (req, res) => {
 
-    if (!req.body.task) {
+    if (!req.body.title) {
         return res.status(400).json({ error: "Title is required" });
     }
 
-    const newTask = db.createTask(req.body.task);
+    const newTask = db.createTask(req.body.title);
 
     res.status(201).json(newTask);
 });
@@ -157,17 +135,21 @@ app.post("/tasks", (req, res) => {
  *         description: Task not found
  */
 app.put("/tasks/:id", (req, res) => {
-    const task = getTaskById(req.params.id);
+    const {
+        body: { title, done },
+        params: { id }
+    } = req;
+
+    let task = db.getTaskById(id);
 
     if (!task) {
         return res.status(404).json({ error: "Task not found" });
     }
-    if (req.body.task == "") {
+    if (task == "") {
         return res.status(400).json({ error: "task is required" });
     }
 
-    task.task = req.body.task ?? task.task;
-    task.done = req.body.done ?? task.done;
+    task = db.updateTask(title, done, id);
     res.json(task);
 });
 
@@ -190,13 +172,14 @@ app.put("/tasks/:id", (req, res) => {
  *         description: Task not found
  */
 app.delete("/tasks/:id", (req, res) => {
-    const task = getTaskById(req.params.id);
+    const { params: {id} } = req
+    const task = db.getTaskById(id);
 
     if (!task) {
         return res.status(404).json({ error: "Task not found" });
     }
 
-    tasks.splice(tasks.indexOf(task), 1);
+    db.deleteTask(id);
     res.sendStatus(204);
 });
 
